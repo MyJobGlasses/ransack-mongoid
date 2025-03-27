@@ -1,7 +1,6 @@
 require 'machinist/object'
 require 'sham'
 require 'faker'
-require 'pry'
 require 'mongoid'
 require 'ransack'
 

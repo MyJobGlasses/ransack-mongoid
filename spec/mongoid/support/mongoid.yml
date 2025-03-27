@@ -9,3 +9,6 @@ test:
       database: ransack_mongoid_test
       hosts:
         - localhost:27017
+      options:
+        user: root
+        password: root
