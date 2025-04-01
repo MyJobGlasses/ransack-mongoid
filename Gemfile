@@ -29,3 +29,4 @@ else
 end
 
 gem 'ransack', github: 'activerecord-hackery/ransack'
+gem 'polyamorous', '~> 2.3'

@@ -1,5 +1,5 @@
 require 'ransack/context'
-require 'polyamorous'
+require 'polyamorous' if defined?(ActiveRecord)
 
 module Ransack
   module Adapters

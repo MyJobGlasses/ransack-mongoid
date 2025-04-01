@@ -1,4 +1,5 @@
 require 'mongoid'
+require 'ransack/adapters/mongoid'
 
 Mongoid.load!(File.expand_path("../mongoid.yml", __FILE__), :test)
 Mongo::Logger.logger.level = Logger::WARN if defined?(Mongo)
@@ -113,7 +114,8 @@ end
 module Schema
   def self.create
     10.times do
-      person = Person.make.save!
+      parent = Person.create!(parent: 'Parent')
+      person = Person.create!(name: 'Child', parent: parent)
       Note.make.save!(:notable => person)
       3.times do
         article = Article.create!(:person => person)
