@@ -17,7 +17,7 @@ class Person
   field :salary, type: Integer
   field :awesome, type: Boolean, default: false
 
-  belongs_to :parent, :class_name => 'Person', inverse_of: :children
+  belongs_to :parent, :class_name => 'Person', inverse_of: :children, optional: true
   has_many   :children, :class_name => 'Person', inverse_of: :parent
 
   has_many   :articles
@@ -114,24 +114,26 @@ end
 module Schema
   def self.create
     10.times do
-      parent = Person.create!(parent: 'Parent')
+
+      parent = Person.create!(name: 'Parent')
       person = Person.create!(name: 'Child', parent: parent)
-      Note.make.save!(:notable => person)
+      Note.create(notable: person)
       3.times do
         article = Article.create!(:person => person)
         3.times do
           # article.tags = [Tag.make.save!, Tag.make.save!, Tag.make.save!]
         end
-        Note.create.save!(:notable => article)
+        Note.create!(notable: article)
         10.times do
-          Comment.create.save!(:article => article, :person => person)
+          Comment.create!(article: article, person: person)
         end
       end
     end
 
     Comment.create!(
-      :body => 'First post!',
-      :article => Article.create!(:title => 'Hello, world!')
-      )
+      body: 'First post!',
+      article: Article.create!(title: 'Hello, world!', person: Person.create(name: 'Article poster')),
+      person: Person.create(name: 'commenter')
+    )
   end
 end
