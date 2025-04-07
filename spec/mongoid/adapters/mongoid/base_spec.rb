@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'mongoid'
 
 module Ransack
   module Adapters
@@ -91,7 +92,7 @@ module Ransack
         describe '#ransacker' do
           # For infix tests
           def self.sane_adapter?
-            case ::Mongoid::Document.connection.adapter_name
+            case ::Mongoid.default_client.options[:database].to_s
             when "SQLite3", "PostgreSQL"
               true
             else
@@ -307,7 +308,6 @@ module Ransack
 
           it { should eq [] }
         end
-
       end
     end
   end

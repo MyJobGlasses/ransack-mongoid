@@ -3,6 +3,7 @@ require 'ransack/adapters/mongoid/attributes/attribute'
 require 'ransack/adapters/mongoid/table'
 require 'ransack/adapters/mongoid/inquiry_hash'
 
+puts 'LOADED MONGOID ADAPTER'
 Mongoid::Document.include Ransack::Adapters::Mongoid::Base
 
 Mongoid::Document.singleton_class.prepend(Module.new do
@@ -11,6 +12,14 @@ Mongoid::Document.singleton_class.prepend(Module.new do
     base.extend Ransack::Adapters::Mongoid::Base::ClassMethods
   end
 end)
+
+module Mongoid
+  class Criteria
+    def base_klass
+      klass.base_klass
+    end
+  end
+end
 
 case ::Mongoid::VERSION
 when /^3\.2\./

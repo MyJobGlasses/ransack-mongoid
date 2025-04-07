@@ -36,5 +36,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec', '~> 3'
   spec.add_development_dependency 'machinist', '~> 1.0.6'
   spec.add_development_dependency 'faker', '~> 3.5.1'
-  spec.add_development_dependency 'pry', '0.10'
 end

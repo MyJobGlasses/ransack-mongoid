@@ -1,5 +1,10 @@
+# To load the override properly, you need to require the original context first
 require 'ransack/context'
-require 'polyamorous' if defined?(ActiveRecord)
+require 'mongoid'
+require 'polyamorous' if !defined?(Mongoid)
+require_relative '../mongoid/ransack/context'
+require 'polyamorous' if !defined?(Mongoid)
+require_relative './ransack/visitor'
 
 module Ransack
   module Adapters
@@ -9,6 +14,17 @@ module Ransack
         def initialize(object, options = {})
           super
           # @arel_visitor = @engine.connection.visitor
+        end
+
+        def self.for(object, options = {})
+          context =
+            if object.class == Class
+              for_class(object, options)
+            else
+              for_object(object, options)
+            end
+          context or raise ArgumentError,
+            "Don't know what context to use for #{object}"
         end
 
         def relation_for(object)
@@ -34,6 +50,7 @@ module Ransack
 
           name = '_id' if name == 'id'
 
+
           t = object.klass.fields[name].try(:type) || bind_pair_for(attr.name).first.fields[name].type
 
           t.to_s.demodulize.underscore.to_sym
@@ -41,6 +58,7 @@ module Ransack
 
         def evaluate(search, opts = {})
           viz = Visitor.new
+
           relation = @object.where(viz.accept(search.base))
           if search.sorts.any?
             ary_sorting = viz.accept(search.sorts)
@@ -57,9 +75,11 @@ module Ransack
           relation
         end
 
-        def attribute_method?(str, klass = @klass)
+        def attribute_method?(str, klass = @object)
           exists = false
-          if ransackable_attribute?(str, klass)
+          if klass.is_a?(::Mongoid::Criteria) && ransackable_attribute?(str, klass)
+            exists = true
+          elsif klass.is_a?(::Mongoid::Document) && ransackable_attribute?(str, klass)
             exists = true
           elsif (segments = str.split(Constants::UNDERSCORE)).size > 1
             remainder = []
@@ -90,7 +110,7 @@ module Ransack
           elsif obj.respond_to? :klass
             obj.klass
           elsif obj.respond_to? :base_klass
-            obj.base_klass
+            obj.klass
           else
             raise ArgumentError, "Don't know how to klassify #{obj}"
           end
@@ -106,7 +126,7 @@ module Ransack
 
       private
 
-        def get_parent_and_attribute_name(str, parent = @base)
+        def get_parent_and_attribute_name(str, parent = @object)
           attr_name = nil
 
           if ransackable_attribute?(str, klassify(parent))
@@ -136,7 +156,7 @@ module Ransack
         end
 
         def join_dependency(relation)
-          if relation.respond_to?(:join_dependency) # Polyamorous enables this
+          if relation.respond_to?(:join_dependency) && defined?(Polyamorous) # Polyamorous enables this
             relation.join_dependency
           else
             build_join_dependency(relation)

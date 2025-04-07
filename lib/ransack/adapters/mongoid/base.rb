@@ -1,4 +1,5 @@
 require 'delegate'
+require 'mongoid'
 
 module Ransack
   module Adapters
@@ -126,7 +127,28 @@ module Ransack
             { :name => name }
           end
 
+          def base_klass
+            if self < ::Mongoid::Document
+              # Check if this is a subclass using single collection inheritance
+              if superclass < ::Mongoid::Document
+                # For SCI (Single Collection Inheritance), return the topmost Mongoid class
+                parent = superclass
+                while parent < Mongoid::Document && parent.superclass < Mongoid::Document
+                  parent = parent.superclass
+                end
+                parent
+              else
+                # Not using inheritance, return self
+                self
+              end
+            else
+              # Not a Mongoid model, return self
+              self
+            end
+          end
         end
+
+        ::Mongoid::Criteria.include ClassMethods
 
       end # Base
     end

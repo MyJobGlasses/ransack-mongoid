@@ -1,11 +1,12 @@
 require 'ransack/visitor'
+require 'active_record'
+require_relative '../../../adapters/mongoid'
 
 module Ransack
   class Context
     # attr_reader :arel_visitor
 
     class << self
-
       def for_class(klass, options = {})
         if klass.ancestors.include?(::Mongoid::Document)
           Adapters::Mongoid::Context.new(klass, options)
@@ -55,5 +56,8 @@ module Ransack
       end
     end
 
+    def ransackable_alias(str)
+      klass._ransack_aliases.fetch(str, klass._ransack_aliases.fetch(str.to_sym, str))
+    end
   end
 end
