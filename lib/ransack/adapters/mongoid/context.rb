@@ -10,7 +10,6 @@ module Ransack
   module Adapters
     module Mongoid
       class Context < ::Ransack::Context
-
         def initialize(object, options = {})
           super
           # @arel_visitor = @engine.connection.visitor
@@ -59,12 +58,14 @@ module Ransack
         def evaluate(search, opts = {})
           viz = Visitor.new
 
-          relation = @object.where(viz.accept(search.base))
+          condition = viz.accept(search.base) || {}
+          relation = @object.where(condition)
+
           if search.sorts.any?
             ary_sorting = viz.accept(search.sorts)
             sorting = {}
             ary_sorting.each do |s|
-              sorting.merge! Hash[s.map { |k, d| [k.to_s == 'id' ? '_id' : k, d] }]
+              sorting.merge! Hash[s.map { |k, d| [ k.to_s == 'id' ? '_id' : k, d ] }]
             end
             relation = relation.order_by(sorting)
             # relation = relation.except(:order)
@@ -146,7 +147,7 @@ module Ransack
             end
           end
 
-          [parent, attr_name]
+          [ parent, attr_name ]
         end
 
         def get_association(str, parent = @base)
@@ -225,7 +226,6 @@ module Ransack
           end
           found_association
         end
-
       end
     end
   end
